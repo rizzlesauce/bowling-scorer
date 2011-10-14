@@ -1,6 +1,6 @@
 package rossadamson.bowling;
 
-import rossadamson.bowling.Roll.InvalidRollException;
+import java.util.Collection;
 
 /**
  * Represents a bowling game.
@@ -11,6 +11,7 @@ public class BowlingGame {
     protected Roll currentRoll;
     protected Frame[] frames;
     protected int currentFrameIndex;
+    private int pinsUp;
     public static final int NUMBER_OF_FRAMES = 10;
     public static final int NUMBER_OF_PINS = 10;
     
@@ -32,6 +33,7 @@ public class BowlingGame {
         }
         frames[NUMBER_OF_FRAMES - 1].isLast = true;
         currentFrameIndex = 0;
+        pinsUp = NUMBER_OF_PINS;
     }
     
     /**
@@ -53,7 +55,7 @@ public class BowlingGame {
      * @return
      */
     public boolean isFinished() {
-        return lastFrame().isComplete();
+        return lastFrame().hasAllRolls();
     }
     
     /**
@@ -62,6 +64,10 @@ public class BowlingGame {
      */
     protected Frame lastFrame() {
         return frames[NUMBER_OF_FRAMES - 1];
+    }
+    
+    public Roll currentRoll() {
+        return frames[currentFrameIndex].endRoll;
     }
     
     /**
@@ -73,24 +79,37 @@ public class BowlingGame {
     public void addRoll(int pinsDown) throws GameFinishedException, InvalidRollException {
         if (isFinished()) {
             throw new GameFinishedException();
+        } else if (pinsDown > pinsUp) {
+            throw new InvalidRollException();
         } else {
-            if (currentRoll == null) {
-                currentRoll = new Roll(pinsDown);
-            } else {
-                currentRoll.nextRoll = new Roll(pinsDown);
-                currentRoll = currentRoll.nextRoll;
+            Roll roll = new Roll(pinsDown);
+            
+            // check for frame change
+            if (frames[currentFrameIndex].hasAllRolls()) {
+                // link the roll from the last frame to the new roll
+                frames[currentFrameIndex].endRoll.nextRoll = roll;
+                ++currentFrameIndex;
             }
+            
+            frames[currentFrameIndex].addRoll(roll);
         }
     }
     
     /**
-     * Exception for adding a roll when the game is already over.
-     * @author Ross Adamson
+     * Get the set of possible rolls.
+     * @return Zero sized result means no more rolls are possible
+     * because the game is over.
+     * @throws InvalidRollException 
      */
-    public class GameFinishedException extends Exception {
-        /**
-         * 
-         */
-        private static final long serialVersionUID = -7779553600270398528L;
+    public Collection<Roll> possibleRolls() throws InvalidRollException {
+        Frame frame = null;
+        // check for complete frame
+        if (frames[currentFrameIndex].hasAllRolls() && !frames[currentFrameIndex].isLast) {
+            frame = frames[currentFrameIndex + 1];
+        } else {
+            frame = frames[currentFrameIndex];
+        }
+        
+        return frame.possibleRolls();
     }
 }

@@ -8,8 +8,6 @@ import java.util.Random;
 import org.junit.Before;
 import org.junit.Test;
 
-import rossadamson.bowling.Roll.InvalidRollException;
-
 public class FrameTest {
     static Frame frame;
     static Roll strike;
@@ -64,7 +62,7 @@ public class FrameTest {
     }
     
     @Test
-    public void testLastFrame() throws Roll.InvalidRollException {
+    public void testLastFrame() throws InvalidRollException {
         frame.isLast = true;
         frame.addRoll(new Roll(strike.pins()));
         frame.addRoll(new Roll(strike.pins()));
@@ -79,7 +77,7 @@ public class FrameTest {
     }
     
     @Test
-    public void testSpare() throws Roll.InvalidRollException {
+    public void testSpare() throws InvalidRollException {
         Roll roll1 = new Roll(spare1.pins());
         Roll roll2 = new Roll(spare2.pins());
         Roll roll3 = getRandomRoll();
@@ -91,31 +89,31 @@ public class FrameTest {
     
     @Test
     public void testIsComplete() throws Exception {
-        assertTrue("new frame should not be complete", !frame.isComplete());
+        assertTrue("new frame should not be complete", !frame.scoreIsComplete());
         
         frame.addRoll(strike);
-        assertTrue("strike with no additional roll should not be complete", !frame.isComplete());
+        assertTrue("strike with no additional roll should not be complete", !frame.scoreIsComplete());
         
         strike.nextRoll = spare1;
-        assertTrue("strike with one additional roll should not be complete", !frame.isComplete());
+        assertTrue("strike with one additional roll should not be complete", !frame.scoreIsComplete());
         
         spare1.nextRoll = spare2;
-        assertTrue("strike with two additional rolls should be complete", frame.isComplete());
+        assertTrue("strike with two additional rolls should be complete", frame.scoreIsComplete());
         
         setUp();
         frame.addRoll(spare1);
-        assertTrue("one roll should not be complete", !frame.isComplete());
+        assertTrue("one roll should not be complete", !frame.scoreIsComplete());
         
         frame.addRoll(spare2);
-        assertTrue("spare should not be complete", !frame.isComplete());
+        assertTrue("spare should not be complete", !frame.scoreIsComplete());
         
         spare2.nextRoll = under1;
-        assertTrue("spare with nextRoll should be complete", frame.isComplete());
+        assertTrue("spare with nextRoll should be complete", frame.scoreIsComplete());
         
         setUp();
         frame.addRoll(under1);
         frame.addRoll(under2);
-        assertTrue("two rolls should be complete", frame.isComplete());
+        assertTrue("two rolls should be complete", frame.scoreIsComplete());
     }
 
     @Test

@@ -5,9 +5,6 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
-import rossadamson.bowling.BowlingGame.GameFinishedException;
-import rossadamson.bowling.Roll.InvalidRollException;
-
 public class BowlingGameTest {
     public static BowlingGame bowling;
 

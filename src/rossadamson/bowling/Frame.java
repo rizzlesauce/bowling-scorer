@@ -1,9 +1,7 @@
 package rossadamson.bowling;
 
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
-
-import rossadamson.bowling.Roll.InvalidRollException;
 
 /**
  * A bowling frame.
@@ -92,12 +90,12 @@ public class Frame {
     }
     
     /**
-     * Determine whether this frame is complete.
+     * Determine whether this frame's score is complete.
      * A frame is complete if all the rolls it depends on for a frame
      * score have been made.
      * @return
      */
-    public boolean isComplete() {
+    public boolean scoreIsComplete() {
         boolean complete = false;
         
         if (startRoll != null) {
@@ -126,45 +124,107 @@ public class Frame {
     }
     
     /**
+     * Determine whether this frame has all the rolls it needs to be complete.
+     * @return
+     */
+    public boolean hasAllRolls() {
+        boolean complete = false;
+        
+        Iterator<Roll> rolls = rollIterator();
+        
+        if (rolls.hasNext()) {
+                // at least one roll
+            Roll start = rolls.next();
+            if (start.isStrike()) {
+                    // strike
+                if (isLast) {
+	                // check for two more rolls
+	                if (start.hasNext() && start.nextRoll.hasNext()) {
+	                    complete = true;
+	                }
+                } else {
+                        // a strike completes the frame
+                    complete = true;
+                }
+            } else if (rolls.hasNext()) {
+                    // at least two rolls
+                if (isLast) {
+	                // check for spare
+	                Roll second = start.nextRoll;
+	                if (start.pins() + second.pins() == BowlingGame.NUMBER_OF_PINS) {
+	                        // spare
+	                    // check for third roll
+	                    if (second.hasNext()) {
+	                        complete = true;
+	                    }
+	                } else {
+	                        // two rolls but no spare
+	                    complete = true;
+	                }
+                } else {
+                        // two rolls completes the frame
+                    complete = true;
+                }
+            }
+        }
+        
+        return complete;
+    }
+    
+    /**
+     * Get the set of possible rolls.
+     * @return Zero sized result means no more rolls are possible
+     * because the game is over.
+     * @throws InvalidRollException 
+     */
+    public Collection<Roll> possibleRolls() throws InvalidRollException {
+        Collection<Roll> possibleRolls = null;
+
+        Iterator<Roll> rolls = rollIterator();
+        
+        if (rolls.hasNext()) {
+                // at least one roll
+            Roll start = rolls.next();
+            if (start.isStrike()) {
+                    // strike
+                if (isLast) {
+	                // need two more rolls
+	                if (start.hasNext()) {
+	                    Roll second = start.nextRoll;
+	                    
+	                    if (!second.hasNext()) {
+	                        possibleRolls = Roll.getRangeOfRolls(0, 10);
+	                    }
+	                } else {
+	                    possibleRolls = Roll.getRangeOfRolls(0, 10);
+	                }
+                }
+            } else if (rolls.hasNext()) {
+                    // at least two rolls
+                if (isLast) {
+	                // check for spare
+	                Roll second = start.nextRoll;
+	                if (start.pins() + second.pins() == BowlingGame.NUMBER_OF_PINS) {
+	                        // spare
+	                    // check for third roll
+	                    if (!second.hasNext()) {
+	                        possibleRolls = Roll.getRangeOfRolls(0, 10);
+	                    }
+	                }
+                }
+            } else {
+                
+            }
+        }
+  
+        return possibleRolls;
+    }
+    
+    /**
      * Get an iterator over the rolls in the frame.
      * @return
      */
     public Iterator<Roll> rollIterator() {
-        return new RollIterator();
-    }
-        
-    /**
-     * An iterator for the rolls in this frame.
-     * @author Ross Adamson
-     */
-    public class RollIterator implements Iterator<Roll> {
-        public Roll currentRoll;
-        
-        public RollIterator() {
-            currentRoll = startRoll;
-        }
-        
-        @Override
-        public boolean hasNext() {
-            return (endRoll != null) && (currentRoll != endRoll.nextRoll);
-        }
-
-        @Override
-        public Roll next() {
-            if (!hasNext()) {
-                throw new NoSuchElementException();
-            }
-            
-            Roll result = currentRoll;
-            if (result != null) {
-                currentRoll = result.nextRoll;
-            }
-            return result;
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
+        return new RollIterator(startRoll, endRoll);
     }
 }

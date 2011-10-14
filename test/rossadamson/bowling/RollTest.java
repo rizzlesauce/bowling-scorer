@@ -4,17 +4,15 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import rossadamson.bowling.Roll.InvalidRollException;
-
 public class RollTest {
 
-    @Test(expected=Roll.InvalidRollException.class)
+    @Test(expected=InvalidRollException.class)
     public void testRollTooBig() throws InvalidRollException {
         @SuppressWarnings("unused")
         Roll roll = new Roll(BowlingGame.NUMBER_OF_PINS + 1);
     }
     
-    @Test(expected=Roll.InvalidRollException.class)
+    @Test(expected=InvalidRollException.class)
     public void testRollTooLittle() throws InvalidRollException {
         @SuppressWarnings("unused")
         Roll roll = new Roll(-1);

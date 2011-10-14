@@ -1,5 +1,8 @@
 package rossadamson.bowling;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 /**
  * The roll of a bowling ball and the pins it knocked down.
  * @author Ross Adamson
@@ -54,17 +57,17 @@ public class Roll {
     }
     
     /**
-     * An invalid roll, such as a roll with two many pins or
-     * a roll whose pins are greater than the pins left in the
-     * last roll.
-     * @author Ross Adamson
-     *
+     * Get a range of pin rolls.
+     * @param rolls
+     * @param minPins The smallest pin
+     * @param maxPins The greatest pin
+     * @throws InvalidRollException
      */
-    public class InvalidRollException extends Exception {
-        /**
-         * 
-         */
-        private static final long serialVersionUID = 2398620079573126277L;
+    public static Collection<Roll> getRangeOfRolls(int minPins, int maxPins) throws InvalidRollException {
+        ArrayList<Roll> rolls = new ArrayList<Roll>();
+        for (int pins = minPins; pins <= maxPins; ++pins) {
+            rolls.add(new Roll(pins));
+        }
+        return rolls;
     }
-    
 }
