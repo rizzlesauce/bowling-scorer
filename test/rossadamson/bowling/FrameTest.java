@@ -3,92 +3,164 @@ package rossadamson.bowling;
 import static org.junit.Assert.*;
 
 import java.util.Iterator;
-import java.util.Random;
 
 import org.junit.Before;
 import org.junit.Test;
 
+/**
+ * @author Ross Adamson
+ */
 public class FrameTest {
     static Frame frame;
+    static Frame strikeFrame;
     static Roll strike;
     static Roll spare1;
     static Roll spare2;
     static Roll under1;
     static Roll under2;
     static Roll zero;
-
+    private Frame frameWithOneRoll;
+    private Frame twoRollFrame;
+    private Frame spareFrame;
+    private Frame twoZerosFrame;
+   
     @Before
     public void setUp() throws Exception {
         frame = new Frame();
         
-        strike = new Roll(BowlingGame.NUMBER_OF_PINS);
-        
-        Random random = new Random();
+        strike = new Roll(BowlingGame.ALL_PINS);
         
         // rolls that make a spare
-        int firstSpare = random.nextInt(BowlingGame.NUMBER_OF_PINS);
-        int secondSpare = BowlingGame.NUMBER_OF_PINS - firstSpare;
+        int firstSpare = TestUtils.random.nextInt(BowlingGame.ALL_PINS);
+        int secondSpare = BowlingGame.ALL_PINS - firstSpare;
         spare1 = new Roll(firstSpare);
         spare2 = new Roll(secondSpare);
         
         // rolls that don't add up to 10
-        int firstUnder = random.nextInt(BowlingGame.NUMBER_OF_PINS - 1); 
-        int secondUnder = random.nextInt(BowlingGame.NUMBER_OF_PINS - firstUnder);
+        int firstUnder = TestUtils.random.nextInt(BowlingGame.ALL_PINS - 2) + 1;
+        int secondUnder = TestUtils.random.nextInt(BowlingGame.ALL_PINS - firstUnder);
         under1 = new Roll(firstUnder);
         under2 = new Roll(secondUnder);
         
         zero = new Roll(0);
+        
+        strikeFrame = new Frame();
+        strikeFrame.addRoll(new Roll(strike.pins()));
+        
+        frameWithOneRoll = new Frame();
+        frameWithOneRoll.addRoll(new Roll(under1.pins()));
+        
+        twoRollFrame = new Frame();
+        twoRollFrame.addRoll(new Roll(under1.pins()));
+        twoRollFrame.addRoll(new Roll(under2.pins()));
+        
+        spareFrame = new Frame();
+        spareFrame.addRoll(new Roll(spare1.pins()));
+        spareFrame.addRoll(new Roll(spare2.pins()));
+        
+        twoZerosFrame = new Frame();
+        twoZerosFrame.addRoll(new Roll(0));
+        twoZerosFrame.addRoll(new Roll(0));
     }
-
+    
     @Test
-    public void testEmptyFrame() {
+    public void testAddRoll() {
+        int[] numbersOfRolls = {1, 2, 3};
+        for (int i = 0; i < numbersOfRolls.length; ++i) {
+            
+            Roll[] rolls = TestUtils.randomRolls(numbersOfRolls[i]);
+            frame.init();
+            
+            for (int j = 0; j < rolls.length; ++j) {
+                frame.addRoll(rolls[j]);
+            }
+            
+            assertEquals("first roll matches", rolls[0], frame.firstRoll);
+            assertEquals("last roll matches", rolls[rolls.length - 1], frame.endRoll);
+        }
+    }
+    
+    @Test
+    public void testRollCount() {
+        int[] numbersOfRolls = {0, 1, 2, 3};
+        for (int i = 0; i < numbersOfRolls.length; ++i) {
+            Roll[] rolls = TestUtils.randomRolls(numbersOfRolls[i]);
+            frame.init();
+            
+            for (int j = 0; j < rolls.length; ++j) {
+                frame.addRoll(rolls[j]);
+            }
+            
+            assertEquals("number of rolls", rolls.length, frame.rollCount());
+        }
+    }
+    
+    @Test
+    public void testIsStrike() {
+        assertTrue("strike frame is strike frame", strikeFrame.isStrike());
+        assertFalse("spare frame is not strike", spareFrame.isStrike());
+        assertFalse("empty frame is not strike frame", frame.isStrike());
+        assertFalse("one roll frame is not strike", frameWithOneRoll.isStrike());
+        assertFalse("two roll frame is not strike", twoRollFrame.isStrike());
+        assertFalse("two zeros frame is not strike", twoZerosFrame.isStrike());
+    }
+    
+    @Test
+    public void testIsSpare() {
+        assertTrue("spare rolls is spare frame", spareFrame.isSpare());
+        assertFalse("strike frame is not spare frame", strikeFrame.isSpare());
+        assertFalse("empty frame is not spare frame", frame.isSpare());
+        assertFalse("one roll frame is not spare", frameWithOneRoll.isSpare());
+        assertFalse("two roll frame is not spare", twoRollFrame.isSpare());
+        assertFalse("two zeros frame is not spare", twoZerosFrame.isSpare());
+    }
+    
+    @Test
+    public void testGetScore() {
         assertEquals("score should be zero", 0, frame.getScore());
-    }
-    
-    @Test
-    public void testSingleStrike() {
+        
         frame.addRoll(strike);
-        assertEquals("single strike should get " + BowlingGame.NUMBER_OF_PINS + " points", BowlingGame.NUMBER_OF_PINS,
+        assertEquals("single strike should get " + BowlingGame.ALL_PINS + " points", BowlingGame.ALL_PINS,
                 frame.getScore());
-    }
-    
-    @Test
-    public void testStrikeAndRolls() {
+        
+        frame.init();
         frame.addRoll(strike);
         strike.nextRoll = under1;
         under1.nextRoll = under2;
-        assertEquals(null, BowlingGame.NUMBER_OF_PINS + under1.pins + under2.pins,
+        assertEquals("strike and two rolls", BowlingGame.ALL_PINS + under1.pins() + under2.pins(),
                 frame.getScore());
-    }
-    
-    @Test
-    public void testLastFrame() throws InvalidRollException {
+        
+        Frame lastFrame = new Frame();
+        lastFrame.isLast = true;
+        Roll roll1 = new Roll(6);
+        Roll roll2 = new Roll(4);
+        Roll roll3 = new Roll(5);
+        lastFrame.addRoll(roll1);
+        lastFrame.addRoll(roll2);
+        lastFrame.addRoll(roll3);
+        assertEquals("last frame with spare", roll1.pins() + roll2.pins() + roll3.pins(),
+                lastFrame.getScore());
+        
+        frame.init();
         frame.isLast = true;
         frame.addRoll(new Roll(strike.pins()));
         frame.addRoll(new Roll(strike.pins()));
         frame.addRoll(new Roll(strike.pins()));
-        assertEquals(null, BowlingGame.NUMBER_OF_PINS * 3,
+        assertEquals("last frame with three perfect rolls", BowlingGame.ALL_PINS * 3,
                 frame.getScore());
-    }
-    
-    public static Roll getRandomRoll() throws InvalidRollException {
-        Random random = new Random();
-        return new Roll(random.nextInt(BowlingGame.NUMBER_OF_PINS + 1));
-    }
-    
-    @Test
-    public void testSpare() throws InvalidRollException {
-        Roll roll1 = new Roll(spare1.pins());
-        Roll roll2 = new Roll(spare2.pins());
-        Roll roll3 = getRandomRoll();
+        
+        roll1 = new Roll(spare1.pins());
+        roll2 = new Roll(spare2.pins());
+        roll3 = TestUtils.randomRoll();
+        frame.init();
         frame.addRoll(roll1);
         frame.addRoll(roll2);
         roll2.nextRoll = roll3;
-        assertEquals("", BowlingGame.NUMBER_OF_PINS + roll3.pins(), frame.getScore());
+        assertEquals("spare frame", BowlingGame.ALL_PINS + roll3.pins(), frame.getScore());
     }
-    
+   
     @Test
-    public void testIsComplete() throws Exception {
+    public void testScoreIsComplete() throws Exception {
         assertTrue("new frame should not be complete", !frame.scoreIsComplete());
         
         frame.addRoll(strike);
@@ -99,6 +171,7 @@ public class FrameTest {
         
         spare1.nextRoll = spare2;
         assertTrue("strike with two additional rolls should be complete", frame.scoreIsComplete());
+        
         
         setUp();
         frame.addRoll(spare1);
@@ -114,8 +187,83 @@ public class FrameTest {
         frame.addRoll(under1);
         frame.addRoll(under2);
         assertTrue("two rolls should be complete", frame.scoreIsComplete());
+        
+        Frame lastFrame = new Frame();
+        lastFrame.isLast = true;
+        lastFrame.addRoll(new Roll(4));
+        lastFrame.addRoll(new Roll(2));
+        assertTrue("last frame with two rolls is complete", lastFrame.scoreIsComplete());
+    }
+    
+    @Test
+    public void testHasAllRolls() {
+        assertFalse("empty frame doesn't have all rolls", frame.hasAllRolls()); 
+        assertTrue("frame with strike has all rolls", strikeFrame.hasAllRolls());
+        assertFalse("frame with one non-strike roll doesn't have all rolls", frameWithOneRoll.hasAllRolls());
+        assertTrue("frame with two rolls is complete", twoRollFrame.hasAllRolls());
+        assertTrue("spare frame is complete", spareFrame.hasAllRolls());
+        assertTrue("two zeros is complete", twoZerosFrame.hasAllRolls());
+        
+        Frame lastFrame = new Frame();
+        lastFrame.isLast = true;
+        lastFrame.addRoll(new Roll(10));
+        lastFrame.addRoll(new Roll(10));
+        assertFalse("two strikes in last frame not complete", lastFrame.hasAllRolls());
+        
+        lastFrame.addRoll(new Roll(10));
+        assertTrue("three strikes in last frame complete", lastFrame.hasAllRolls());
+        
+        lastFrame.init();
+        lastFrame.isLast = true;
+        lastFrame.addRoll(new Roll(3));
+        lastFrame.addRoll(new Roll(7));
+        assertFalse("spare in last frame not complete", lastFrame.hasAllRolls());
+        
+        lastFrame.addRoll(new Roll(2));
+        assertTrue("spare with extra in last frame is complete", lastFrame.hasAllRolls());
+        
+        lastFrame.init();
+        lastFrame.addRoll(new Roll(4));
+        lastFrame.addRoll(new Roll(3));
+        assertTrue("last frame with two rolls is complete", lastFrame.hasAllRolls());
     }
 
+    
+    @Test
+    public void testPinsUp() {
+        assertEquals("empty frame has 10 pins", 10, frame.pinsUp());
+        spareFrame.isLast = true;
+        assertEquals("spare last frame has 10 pins left", 10, spareFrame.pinsUp());
+        strikeFrame.isLast = true;
+        assertEquals("strike last frame has 10 pins left", 10, strikeFrame.pinsUp());
+        assertEquals("one roll", BowlingGame.ALL_PINS - frameWithOneRoll.firstRoll.pins(), frameWithOneRoll.pinsUp());
+        assertEquals("two rolls", BowlingGame.ALL_PINS - twoRollFrame.firstRoll.pins() - twoRollFrame.endRoll.pins(),
+                twoRollFrame.pinsUp());
+    }
+
+    @Test
+    public void testPossibleRolls() {
+        int pins = 2;
+        frame.addRoll(new Roll(pins));
+        assertEquals("one roll", BowlingGame.ALL_PINS - pins + 1, frame.possibleRolls().size());
+    }
+    
+    @Test
+    public void testCanRoll() {
+       assertTrue("valid second roll", frameWithOneRoll.canRoll(
+               new Roll(BowlingGame.ALL_PINS - under1.pins())));
+       assertFalse("invalid second roll", frameWithOneRoll.canRoll(
+               new Roll(BowlingGame.ALL_PINS - under1.pins() + 1)));
+       assertTrue("strike on first roll", frame.canRoll(new Roll(BowlingGame.ALL_PINS)));
+       
+       frame.init();
+       frame.isLast = true;
+       frame.addRoll(new Roll(BowlingGame.ALL_PINS));
+       frame.addRoll(new Roll(BowlingGame.ALL_PINS));
+       assertTrue("two strikes on last roll", frame.canRoll(
+               new Roll(BowlingGame.ALL_PINS)));
+    }
+    
     @Test
     public void testRollIterator() {
         frame.isLast = true;

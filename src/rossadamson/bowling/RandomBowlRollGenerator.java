@@ -4,6 +4,10 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Random;
 
+/**
+ * Generates random, valid rolls for a bowling game.
+ * @author Ross Adamson
+ */
 public class RandomBowlRollGenerator implements Iterator<Roll> {
     private Random random;
     private BowlingGame bowlingGame;
@@ -26,11 +30,7 @@ public class RandomBowlRollGenerator implements Iterator<Roll> {
          
         // get a random roll that works
         Roll[] rolls = null;
-        try {
-            rolls = bowlingGame.possibleRolls().toArray(new Roll[0]);
-        } catch (InvalidRollException e) {
-            throw new NoSuchElementException();
-        }
+        rolls = bowlingGame.possibleRolls().toArray(new Roll[0]);
         
         Roll roll = rolls[random.nextInt(rolls.length)];
         

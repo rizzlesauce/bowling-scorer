@@ -1,6 +1,8 @@
 package rossadamson.bowling;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * Represents a bowling game.
@@ -8,13 +10,15 @@ import java.util.Collection;
  * @author Ross Adamson
  */
 public class BowlingGame {
-    protected Roll currentRoll;
-    protected Frame[] frames;
-    protected int currentFrameIndex;
-    private int pinsUp;
+    public Frame[] frames;
+    public int currentFrameIndex;
     public static final int NUMBER_OF_FRAMES = 10;
-    public static final int NUMBER_OF_PINS = 10;
-    
+    public static final int ALL_PINS = 10;
+    /**
+     * Maximum number of rolls possible in any game.
+     */
+    public static final int MAX_ROLLS = 21;
+     
     /**
      * Constructor.
      */
@@ -26,18 +30,17 @@ public class BowlingGame {
      * Initialize this object.
      */
     public void init() {
-        currentRoll = null;
         frames = new Frame[NUMBER_OF_FRAMES];
         for (int frameIndex = 0; frameIndex < NUMBER_OF_FRAMES; ++frameIndex) {
             frames[frameIndex] = new Frame();
         }
         frames[NUMBER_OF_FRAMES - 1].isLast = true;
         currentFrameIndex = 0;
-        pinsUp = NUMBER_OF_PINS;
     }
-    
+   
     /**
      * Get the total score of the game so far.
+     * Include scores from frames that are incomplete.
      * @return
      */
     public int totalScore() {
@@ -55,35 +58,40 @@ public class BowlingGame {
      * @return
      */
     public boolean isFinished() {
-        return lastFrame().hasAllRolls();
+        return frames[NUMBER_OF_FRAMES - 1].hasAllRolls();
     }
     
     /**
-     * Get the last frame.
+     * Get the frame the next roll should go in.
+     * If no rolls more rolls can be made, return null.
      * @return
      */
-    protected Frame lastFrame() {
-        return frames[NUMBER_OF_FRAMES - 1];
-    }
-    
-    public Roll currentRoll() {
-        return frames[currentFrameIndex].endRoll;
+    public Frame nextRollFrame() {
+        Frame frame = null;
+        
+        if (frames[currentFrameIndex].hasAllRolls()) {
+            if (!frames[currentFrameIndex].isLast) {
+	            frame = frames[currentFrameIndex + 1];
+            }
+        } else {
+            frame = frames[currentFrameIndex];
+        }
+        
+        return frame;
     }
     
     /**
      * Add a roll to the game.
      * @param pinsDown Number of pins down in the roll.
      * @throws GameFinishedException
-     * @throws Roll.InvalidRollException
+     * @throws InvalidRollException
      */
-    public void addRoll(int pinsDown) throws GameFinishedException, InvalidRollException {
+    public void addRoll(Roll roll) throws GameFinishedException, InvalidRollException {
         if (isFinished()) {
             throw new GameFinishedException();
-        } else if (pinsDown > pinsUp) {
+        } else if (roll.pins() > nextRollFrame().pinsUp()) {
             throw new InvalidRollException();
         } else {
-            Roll roll = new Roll(pinsDown);
-            
             // check for frame change
             if (frames[currentFrameIndex].hasAllRolls()) {
                 // link the roll from the last frame to the new roll
@@ -99,17 +107,143 @@ public class BowlingGame {
      * Get the set of possible rolls.
      * @return Zero sized result means no more rolls are possible
      * because the game is over.
-     * @throws InvalidRollException 
      */
-    public Collection<Roll> possibleRolls() throws InvalidRollException {
-        Frame frame = null;
-        // check for complete frame
-        if (frames[currentFrameIndex].hasAllRolls() && !frames[currentFrameIndex].isLast) {
-            frame = frames[currentFrameIndex + 1];
+    public Collection<Roll> possibleRolls() {
+        Frame frame = nextRollFrame();
+        Collection<Roll> result = null;
+        
+        if (frame == null) {
+            result = new ArrayList<Roll>();
         } else {
-            frame = frames[currentFrameIndex];
+            result = frame.possibleRolls();
         }
         
-        return frame.possibleRolls();
+        return result;
+    }
+    
+    /**
+     * Whether a roll can be made.
+     * @param roll
+     * @return
+     */
+    public boolean canRoll(Roll roll) {
+        Frame frame = nextRollFrame();
+        boolean result = false;
+        
+        if (frame != null) {
+            result = frame.canRoll(roll);
+        }
+        
+        return result;
+    }
+   
+    /**
+     * Get an iterator over all the rolls in the game.
+     * @return
+     */
+    public Iterator<Roll> rollIterator() {
+        return new RollIterator(frames[0].firstRoll, frames[currentFrameIndex].endRoll);
+    }
+    
+    private enum RollType {Normal, Strike, Spare};
+    /**
+     * Convert roll to a string representation used in toString().
+     * @param roll
+     * @param type The type of roll.
+     * @return
+     */
+    private static String rollToString(Roll roll, RollType type) {
+        String result = null;
+        
+        switch (type) {
+        case Normal:
+            if (roll == null) {
+                result = "";
+            } else if (roll.pins() == 0) {
+                result = "-";
+            } else {
+                result = "" + roll.pins();
+            }
+            break;
+        case Strike:
+           result = "X"; 
+           break;
+        case Spare:
+            result = "/";
+            break;
+        default:
+            break;
+        }
+       
+        return result;
+    }
+    
+    /**
+     * Get a string representation of the score.
+     */
+    public String toString() {
+        String result = "|";
+        String frameDivider = " | ";
+        String emptyBox = " ";
+       
+        for (int frameIndex = 0; frameIndex < NUMBER_OF_FRAMES; ++frameIndex) {
+            Frame frame = frames[frameIndex];
+            
+            String frameScore = null;
+            if (frame.scoreIsComplete()) {
+                frameScore = "" + frame.getScore();
+            } else if (frame.getScore() == 0) {
+                frameScore = "?";
+            } else {
+                frameScore = "" + frame.getScore() + "+?";
+            }
+            result += "(" + frameScore + ") ";
+            
+            if (frame.isLast) {
+                String firstBox, secondBox, thirdBox;
+                firstBox = secondBox = thirdBox = emptyBox;
+                
+                Iterator<Roll> rolls = frame.rollIterator();
+                if (rolls.hasNext()) {
+                    Roll firstRoll = rolls.next();
+                    firstBox = rollToString(firstRoll, (frame.isStrike() ? RollType.Strike : RollType.Normal));
+                    
+                    if (rolls.hasNext()) {
+                        Roll secondRoll = rolls.next();
+                        secondBox = rollToString(secondRoll, (frame.isSpare() ? RollType.Spare : RollType.Normal));
+                        
+                        if (rolls.hasNext()) {
+                            Roll thirdRoll = rolls.next();
+                            thirdBox = rollToString(thirdRoll, RollType.Normal);
+                        }
+                    }
+                }
+                
+                result += firstBox + frameDivider + secondBox + frameDivider + thirdBox;
+                
+            } else {
+                String firstBox, secondBox;
+                firstBox = secondBox = emptyBox;
+                
+                Iterator<Roll> rolls = frame.rollIterator();
+                if (rolls.hasNext()) {
+                    Roll firstRoll = rolls.next();
+                    firstBox = rollToString(firstRoll, (frame.isStrike() ? RollType.Strike : RollType.Normal));
+                    
+                    if (rolls.hasNext()) {
+                        Roll secondRoll = rolls.next();
+                        secondBox = rollToString(secondRoll, (frame.isSpare() ? RollType.Spare : RollType.Normal));
+                    }
+                }
+                
+                result += firstBox + frameDivider + secondBox;
+            }
+          
+            result += " |";
+        }
+        
+        result += "| Total: " + totalScore();
+        
+        return result;
     }
 }

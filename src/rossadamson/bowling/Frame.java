@@ -1,5 +1,6 @@
 package rossadamson.bowling;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -11,8 +12,8 @@ import java.util.Iterator;
  * @author Ross Adamson
  */
 public class Frame {
-    protected Roll startRoll;
-    protected Roll endRoll;
+    public Roll firstRoll;
+    public Roll endRoll;
     public boolean isLast;
     
     public Frame() {
@@ -20,7 +21,7 @@ public class Frame {
     }
 
     public void init() {
-        startRoll = endRoll = null;
+        firstRoll = endRoll = null;
         isLast = false;
     }
     
@@ -32,60 +33,63 @@ public class Frame {
      */
     public void addRoll(Roll roll) {
         if (endRoll == null) {
-            startRoll = endRoll = roll;
+            firstRoll = endRoll = roll;
         } else {
             endRoll.nextRoll = roll;
             endRoll = roll;
         }
     }
-
+    
+    /**
+     * Get the number of rolls in this frame.
+     * @return
+     */
+    public int rollCount() {
+        int count = 0;
+        Iterator<Roll> rolls = rollIterator();
+        
+        while (rolls.hasNext()) {
+            ++count;
+            rolls.next();
+        }
+        
+        return count;
+    }
+    
+    /**
+     * Determine whether this is a strike frame.
+     * @return
+     */
+    public boolean isStrike() {
+        return firstRoll != null &&
+                firstRoll.pins() == BowlingGame.ALL_PINS;
+    }
+    
+    /**
+     * Determine whether this is a spare frame.
+     * @return
+     */
+    public boolean isSpare() {
+       return !isStrike() &&
+               (rollCount() >= 2) &&
+               (firstRoll.pins() + firstRoll.nextRoll.pins() == BowlingGame.ALL_PINS);
+    }
+    
     /**
      * Calculate the score for this frame.
      * If isComplete() == false, this will return an incomplete
      * score.
      * @return
-     * @throws InvalidRollException 
      */
     public int getScore() {
         int score = 0;
         
-        if (isLast) {
-            // add up the pins from the roles in the frame
-            Iterator<Roll> rolls = rollIterator();
-            while (rolls.hasNext()) {
-                Roll currentRoll = rolls.next();
-                score += currentRoll.pins();
-                currentRoll = currentRoll.nextRoll;
-            }
-         } else {
-             int pinsLeft = BowlingGame.NUMBER_OF_PINS;
-            
-            Iterator<Roll> rolls = rollIterator();
-            while (rolls.hasNext()) {
-                Roll currentRoll = rolls.next();
-                if (currentRoll.isStrike()) {
-                        // strike
-                    // get the score of next two rolls
-                    if (currentRoll.hasNext()) {
-                        score += currentRoll.nextRoll.pins();
-                        
-                        if (currentRoll.nextRoll.hasNext()) {
-                            score += currentRoll.nextRoll.nextRoll.pins();
-                        }
-                    }
-                } else if (currentRoll.pins() == pinsLeft) {
-                        // spare
-                    // get the score of next roll
-                    if (currentRoll.hasNext()) {
-                        score += currentRoll.nextRoll.pins();
-                    }
-                }
-                score += currentRoll.pins();
-                pinsLeft -= currentRoll.pins();
-                currentRoll = currentRoll.nextRoll;
-            }
+        if (isStrike() || isSpare()) {
+            score = Roll.pinsFromRollSequence(firstRoll, 3);
+        } else {
+            score = Roll.pinsFromRollSequence(firstRoll, rollCount());
         }
-        
+       
         return score;
     }
     
@@ -98,28 +102,12 @@ public class Frame {
     public boolean scoreIsComplete() {
         boolean complete = false;
         
-        if (startRoll != null) {
-            if (startRoll.isStrike()) {
-                    // strike
-                // check for next two rolls
-                if (startRoll.hasNext() && startRoll.nextRoll.hasNext()) {
-                    complete = true;
-                }
-            } else if (startRoll.hasNext()) {
-                Roll second = startRoll.nextRoll;
-                // check for spare
-                if (startRoll.pins() + second.pins() == BowlingGame.NUMBER_OF_PINS) {
-                        // spare
-                    if (second.hasNext()) {
-                        complete = true;
-                    }
-                } else {
-                        // two rolls but not a spare
-                    complete = true;
-                }
-            }
+        if (isStrike() || isSpare()) {
+            complete = Roll.hasSequenceSize(firstRoll, 3);
+        } else {
+            complete = Roll.hasSequenceSize(firstRoll, 2);
         }
-        
+       
         return complete;
     }
     
@@ -130,94 +118,79 @@ public class Frame {
     public boolean hasAllRolls() {
         boolean complete = false;
         
-        Iterator<Roll> rolls = rollIterator();
-        
-        if (rolls.hasNext()) {
-                // at least one roll
-            Roll start = rolls.next();
-            if (start.isStrike()) {
-                    // strike
-                if (isLast) {
-	                // check for two more rolls
-	                if (start.hasNext() && start.nextRoll.hasNext()) {
-	                    complete = true;
-	                }
-                } else {
-                        // a strike completes the frame
-                    complete = true;
-                }
-            } else if (rolls.hasNext()) {
-                    // at least two rolls
-                if (isLast) {
-	                // check for spare
-	                Roll second = start.nextRoll;
-	                if (start.pins() + second.pins() == BowlingGame.NUMBER_OF_PINS) {
-	                        // spare
-	                    // check for third roll
-	                    if (second.hasNext()) {
-	                        complete = true;
-	                    }
-	                } else {
-	                        // two rolls but no spare
-	                    complete = true;
-	                }
-                } else {
-                        // two rolls completes the frame
-                    complete = true;
-                }
+        if (isLast) {
+            if (isStrike() || isSpare()) {
+                    // frame needs three rolls
+                complete = (rollCount() == 3);
+            } else {
+                    // frame needs two rolls
+                complete = (rollCount() == 2);
             }
+        } else if (isStrike()) {
+                // a strike frame only needs one roll
+            complete = true;
+        } else {
+                // a frame that isn't a strike needs two rolls
+            complete = (rollCount() == 2);
         }
         
         return complete;
     }
     
     /**
+     * Get the number of pins left at the end of the last roll in the 
+     * frame. If there are no rolls, return 10.
+     * @return
+     */
+    public int pinsUp() {
+        int pinsLeft = BowlingGame.ALL_PINS;
+        
+        Iterator<Roll> rolls = rollIterator();
+        while (rolls.hasNext()) {
+            pinsLeft -= rolls.next().pins();
+            if (pinsLeft == 0) {
+                pinsLeft = BowlingGame.ALL_PINS;
+            }
+        }
+        
+        return pinsLeft;
+    }
+    
+    /**
      * Get the set of possible rolls.
      * @return Zero sized result means no more rolls are possible
      * because the game is over.
-     * @throws InvalidRollException 
      */
-    public Collection<Roll> possibleRolls() throws InvalidRollException {
+    public Collection<Roll> possibleRolls() {
         Collection<Roll> possibleRolls = null;
-
-        Iterator<Roll> rolls = rollIterator();
         
-        if (rolls.hasNext()) {
-                // at least one roll
-            Roll start = rolls.next();
-            if (start.isStrike()) {
-                    // strike
-                if (isLast) {
-	                // need two more rolls
-	                if (start.hasNext()) {
-	                    Roll second = start.nextRoll;
-	                    
-	                    if (!second.hasNext()) {
-	                        possibleRolls = Roll.getRangeOfRolls(0, 10);
-	                    }
-	                } else {
-	                    possibleRolls = Roll.getRangeOfRolls(0, 10);
-	                }
-                }
-            } else if (rolls.hasNext()) {
-                    // at least two rolls
-                if (isLast) {
-	                // check for spare
-	                Roll second = start.nextRoll;
-	                if (start.pins() + second.pins() == BowlingGame.NUMBER_OF_PINS) {
-	                        // spare
-	                    // check for third roll
-	                    if (!second.hasNext()) {
-	                        possibleRolls = Roll.getRangeOfRolls(0, 10);
-	                    }
-	                }
-                }
-            } else {
-                
+        if (hasAllRolls()) {
+            possibleRolls = new ArrayList<Roll>();
+        } else {
+            possibleRolls = Roll.getRangeOfRolls(pinsUp());
+        }
+ 
+        return possibleRolls;
+    }
+    
+    /**
+     * Whether a roll can be made in this frame right now.
+     * @param roll
+     * @return
+     */
+    public boolean canRoll(Roll roll) {
+        Collection<Roll> possibleRolls = possibleRolls();
+        boolean result = false;
+        
+        Iterator<Roll> rolls = possibleRolls.iterator();
+        while (rolls.hasNext()) {
+            if (roll.samePins(rolls.next())) {
+               result = true; 
+               break;
             }
         }
-  
-        return possibleRolls;
+        
+        return result;
     }
     
     /**
@@ -225,6 +198,6 @@ public class Frame {
      * @return
      */
     public Iterator<Roll> rollIterator() {
-        return new RollIterator(startRoll, endRoll);
+        return new RollIterator(firstRoll, endRoll);
     }
 }
