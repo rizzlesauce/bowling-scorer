@@ -96,8 +96,10 @@ public class Frame {
         int score = 0;
         
         if (isStrike() || isSpare()) {
+            // add up pins from 3 rolls, starting at firstRoll
             score = Roll.pinsFromRollSequence(firstRoll, 3);
         } else {
+            // add up pins from all the rolls in the frame
             score = Roll.pinsFromRollSequence(firstRoll, rollCount());
         }
        
