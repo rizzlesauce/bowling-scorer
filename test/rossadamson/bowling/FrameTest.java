@@ -232,10 +232,16 @@ public class FrameTest {
     @Test
     public void testPinsUp() {
         assertEquals("empty frame has 10 pins", 10, frame.pinsUp());
+        assertEquals("spare frame has 0 pins left", 0, spareFrame.pinsUp());
+        
         spareFrame.isLast = true;
         assertEquals("spare last frame has 10 pins left", 10, spareFrame.pinsUp());
+        
+        assertEquals("strike frame has 0 pins left", 0, strikeFrame.pinsUp());
+        
         strikeFrame.isLast = true;
         assertEquals("strike last frame has 10 pins left", 10, strikeFrame.pinsUp());
+        
         assertEquals("one roll", BowlingGame.ALL_PINS - frameWithOneRoll.firstRoll.pins(), frameWithOneRoll.pinsUp());
         assertEquals("two rolls", BowlingGame.ALL_PINS - twoRollFrame.firstRoll.pins() - twoRollFrame.lastRoll.pins(),
                 twoRollFrame.pinsUp());

@@ -204,6 +204,8 @@ public class BowlingGame {
         String result = "|";
         String frameDivider = " | ";
         String emptyBox = " ";
+        String skipSymbol = ".";
+        String currentLocationSymbol = "@";
        
         // layout the frames in order
         for (int frameIndex = 0; frameIndex < NUMBER_OF_FRAMES; ++frameIndex) {
@@ -214,7 +216,7 @@ public class BowlingGame {
             if (frame.scoreIsComplete()) {
                 frameScore = "" + frame.getScore();
             } else if (frame.getScore() == 0) {
-                frameScore = "?";
+                frameScore = " ? ";
             } else {
                 frameScore = "" + frame.getScore() + "+?";
             }
@@ -232,13 +234,25 @@ public class BowlingGame {
                     
                     if (rolls.hasNext()) {
                         Roll secondRoll = rolls.next();
-                        secondBox = rollToString(secondRoll, (frame.isSpare() ? RollType.Spare : RollType.Normal));
+                        if (frame.isSpare()) {
+                            secondBox = rollToString(secondRoll, RollType.Spare);
+                        } else {
+                            secondBox = rollToString(secondRoll, RollType.Normal);
+                        }
                         
                         if (rolls.hasNext()) {
                             Roll thirdRoll = rolls.next();
                             thirdBox = rollToString(thirdRoll, RollType.Normal);
+                        } else if (frame == nextRollFrame()) {
+                            thirdBox = currentLocationSymbol;
+                        } else if (frame.hasAllRolls()) {
+                            thirdBox = skipSymbol;
                         }
+                    } else if (frame == nextRollFrame()) {
+                        secondBox = currentLocationSymbol;
                     }
+                } else if (frame == nextRollFrame()) {
+                    firstBox = currentLocationSymbol;
                 }
                 
                 result += firstBox + frameDivider + secondBox + frameDivider + thirdBox;
@@ -255,7 +269,13 @@ public class BowlingGame {
                     if (rolls.hasNext()) {
                         Roll secondRoll = rolls.next();
                         secondBox = rollToString(secondRoll, (frame.isSpare() ? RollType.Spare : RollType.Normal));
+                    } else if (frame == nextRollFrame()) {
+                        secondBox = currentLocationSymbol;
+                    } else if (frame.hasAllRolls()) {
+                        secondBox = skipSymbol; 
                     }
+                } else if (frame == nextRollFrame()) {
+                    firstBox = currentLocationSymbol;
                 }
                 
                 result += firstBox + frameDivider + secondBox;

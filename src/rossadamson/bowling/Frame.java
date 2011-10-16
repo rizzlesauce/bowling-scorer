@@ -148,7 +148,11 @@ public class Frame {
     
     /**
      * Get the number of pins left at the end of the last roll in the 
-     * frame. If there are no rolls, return 10.
+     * frame.
+     * If there are no rolls, return a full set of pins. Likewise,
+     * if the last roll in the frame knocked down all the pins but the
+     * frame isn't complete, return a full set of pins (this applies
+     * only to the last frame of the game).
      */
     public int pinsUp() {
         int pinsLeft = BowlingGame.ALL_PINS;
@@ -156,7 +160,7 @@ public class Frame {
         Iterator<Roll> rolls = rollIterator();
         while (rolls.hasNext()) {
             pinsLeft -= rolls.next().pins();
-            if (pinsLeft == 0) {
+            if (isLast && (pinsLeft == 0) && !hasAllRolls()) {
                 pinsLeft = BowlingGame.ALL_PINS;
             }
         }
