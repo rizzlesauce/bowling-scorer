@@ -29,11 +29,11 @@ public class BowlingGameTest {
         // spare
         bowling.addRoll(new Roll(3));
         bowling.addRoll(new Roll(7));
-        // 4
+        // 4 + 3
         bowling.addRoll(new Roll(4));
         bowling.addRoll(new Roll(3));
         
-        assertEquals(null, 20 + 14 + 4 + 3, bowling.totalScore());
+        assertEquals("strike, spare, 4 and 5", 20 + 14 + 4 + 3, bowling.totalScore());
         
         setUp();
         // perfect game
