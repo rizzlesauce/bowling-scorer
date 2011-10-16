@@ -38,7 +38,7 @@ public class RollTest {
        for (int i = 0; i < timesToTest; ++i) {
            int initValue = TestUtils.random.nextInt(BowlingGame.ALL_PINS + 1);
            roll = new Roll(initValue);
-	       assertEquals("roll has right number of pins", initValue, roll.pins());
+           assertEquals("roll has right number of pins", initValue, roll.pins());
        }
     }
     
@@ -56,16 +56,16 @@ public class RollTest {
             roll2 = TestUtils.randomRoll();
             roll3 = TestUtils.randomRoll();
             
-	        roll1.nextRoll = roll2;
-	        roll2.nextRoll = roll3;
+            roll1.nextRoll = roll2;
+            roll2.nextRoll = roll3;
         
-	        assertEquals("zero rolls", 0, Roll.pinsFromRollSequence(roll1, 0));
-	        assertEquals("first two rolls", roll1.pins() + roll2.pins(), 
-	                Roll.pinsFromRollSequence(roll1, 2));
-	        assertEquals("three rolls", roll1.pins() + roll2.pins() + roll3.pins(),
-	                Roll.pinsFromRollSequence(roll1, 3));
-	        assertEquals("four rolls when only 3 exist", roll1.pins() + roll2.pins() + roll3.pins(),
-	                Roll.pinsFromRollSequence(roll1, 4));
+            assertEquals("zero rolls", 0, Roll.pinsFromRollSequence(roll1, 0));
+            assertEquals("first two rolls", roll1.pins() + roll2.pins(), 
+                    Roll.pinsFromRollSequence(roll1, 2));
+            assertEquals("three rolls", roll1.pins() + roll2.pins() + roll3.pins(),
+                    Roll.pinsFromRollSequence(roll1, 3));
+            assertEquals("four rolls when only 3 exist", roll1.pins() + roll2.pins() + roll3.pins(),
+                    Roll.pinsFromRollSequence(roll1, 4));
         }
     }
     
@@ -78,7 +78,7 @@ public class RollTest {
         roll1 = null;
         int[] lengths = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
         for (int i = 0; i < lengths.length; ++i) {
-	        assertFalse("null roll has size 0", Roll.hasSequenceSize(roll1, lengths[i]));
+            assertFalse("null roll has size 0", Roll.hasSequenceSize(roll1, lengths[i]));
         }
          
         // one roll

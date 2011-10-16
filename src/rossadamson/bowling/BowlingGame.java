@@ -18,6 +18,10 @@ public class BowlingGame {
      * Maximum number of rolls possible in any game.
      */
     public static final int MAX_ROLLS = 21;
+    /**
+     * Roll types used by rollToString().
+     */
+    private enum RollType {Normal, Strike, Spare};
      
     /**
      * Constructor.
@@ -71,7 +75,7 @@ public class BowlingGame {
         
         if (frames[currentFrameIndex].hasAllRolls()) {
             if (!frames[currentFrameIndex].isLast) {
-	            frame = frames[currentFrameIndex + 1];
+                frame = frames[currentFrameIndex + 1];
             }
         } else {
             frame = frames[currentFrameIndex];
@@ -122,7 +126,8 @@ public class BowlingGame {
     }
     
     /**
-     * Whether a roll can be made.
+     * Determine whether a roll would be a valid next
+     * roll in the game.
      * @param roll
      * @return
      */
@@ -145,7 +150,6 @@ public class BowlingGame {
         return new RollIterator(frames[0].firstRoll, frames[currentFrameIndex].endRoll);
     }
     
-    private enum RollType {Normal, Strike, Spare};
     /**
      * Convert roll to a string representation used in toString().
      * @param roll
@@ -186,9 +190,11 @@ public class BowlingGame {
         String frameDivider = " | ";
         String emptyBox = " ";
        
+        // layout the frames in order
         for (int frameIndex = 0; frameIndex < NUMBER_OF_FRAMES; ++frameIndex) {
             Frame frame = frames[frameIndex];
             
+            // put the frame score first
             String frameScore = null;
             if (frame.scoreIsComplete()) {
                 frameScore = "" + frame.getScore();
@@ -199,6 +205,7 @@ public class BowlingGame {
             }
             result += "(" + frameScore + ") ";
             
+            // obtain values for first, second, third roll boxes
             if (frame.isLast) {
                 String firstBox, secondBox, thirdBox;
                 firstBox = secondBox = thirdBox = emptyBox;
@@ -242,6 +249,7 @@ public class BowlingGame {
             result += " |";
         }
         
+        // add the total score
         result += "| Total: " + totalScore();
         
         return result;

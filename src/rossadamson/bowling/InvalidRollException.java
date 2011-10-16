@@ -9,4 +9,4 @@ package rossadamson.bowling;
 public class InvalidRollException extends Exception {
     private static final long serialVersionUID = 2398620079573126277L;
 }
-	
+    

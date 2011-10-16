@@ -46,4 +46,4 @@ public class RollIterator implements Iterator<Roll> {
         throw new UnsupportedOperationException();
     }
 }
-	
+    

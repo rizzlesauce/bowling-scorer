@@ -37,13 +37,13 @@ public class ScorerDemo {
             System.out.println();
             
             if (showScore) {
-	            // show current score
-	            System.out.println(game);
+                // show current score
+                System.out.println(game);
             }
             
             if (showPinsLeft) {
                 // show how many pins are left
-	            System.out.println("" + pinsLeft + " pins left."); 
+                System.out.println("" + pinsLeft + " pins left."); 
             }
             
             if (showScore || showPinsLeft) {
@@ -51,25 +51,25 @@ public class ScorerDemo {
             }
            
             if (showPossibleRolls) {
-	            // list the possible rolls
-	            Roll[] rolls = game.possibleRolls().toArray(new Roll[0]);
-	            
-	            System.out.print("(Possible rolls: ");
-	            for (int i = 0; i < rolls.length; ++i) {
-	                if (i != 0) {
-	                    System.out.print(", ");
-	                }
-	                System.out.print(rolls[i].pins());
-	            }
-	            System.out.print(")");
-	            System.out.println();
+                // list the possible rolls
+                Roll[] rolls = game.possibleRolls().toArray(new Roll[0]);
+                
+                System.out.print("(Possible rolls: ");
+                for (int i = 0; i < rolls.length; ++i) {
+                    if (i != 0) {
+                        System.out.print(", ");
+                    }
+                    System.out.print(rolls[i].pins());
+                }
+                System.out.print(")");
+                System.out.println();
             }
             
             // reset show flags
             showScore = defaultShowScore;
             showPinsLeft = defaultShowPinsLeft;
             showPossibleRolls = defaultShowPossibleRolls;
-	                
+                    
             System.out.print("Roll? ");
                 
             boolean keepGoing = true;
@@ -85,7 +85,7 @@ public class ScorerDemo {
                     game.init();
                     keepGoing = false;
                 } else {
-	                pins = Integer.parseInt(input);
+                    pins = Integer.parseInt(input);
                 }
             } catch (Exception e) {
                 System.out.print("Error reading input. Please try again.");
@@ -96,53 +96,53 @@ public class ScorerDemo {
             }
             
             if (keepGoing) {
-	            // make the roll
-	            Roll roll = new Roll(pins);
-	            if (game.canRoll(roll)) {
-	                
-	                game.addRoll(roll);
-	                
-	                int pinsMissed = pinsLeft - roll.pins();
-	                
-	                System.out.print("You knocked down " + roll.pins() + " pins!");
-	                if (roll.pins() == BowlingGame.ALL_PINS) {
-	                    System.out.print(" Perfect shot!");
-	                } else if (pinsMissed == 0) {
-	                    System.out.print(" You got all of them!");
-	                } else if (pinsMissed == 1) {
-	                    System.out.print(" Good job!");
-	                } else if (pinsMissed == 2) {
-	                    System.out.print(" Not bad!");
-	                }
-	                System.out.println();
-	                
-	                // check for game over
-		            if (game.isFinished()) {
-				        System.out.println();
-				        
-				        System.out.print("You finished!");
-				        
-				        if (game.totalScore() == 300) {
-				            System.out.print(" Wow! A perfect game!");
-				        } else if (game.totalScore() > 250) {
-				            System.out.print(" Very impressive!");
-				        } else if (game.totalScore() > 200) {
-				            System.out.print(" Way to go!");
-				        } else if (game.totalScore() > 150) {
-				            System.out.print(" Not bad!");
-				        }
-				        System.out.println();
-				        System.out.println();
-				        System.out.println(game);
-				        
-				        done = true;
-		            }
-	            } else {
-	                System.out.print("Invalid roll. Please try again.");
-	                showScore = false;
-	                showPossibleRolls = false;
-	                showPinsLeft = false;
-	            }
+                // make the roll
+                Roll roll = new Roll(pins);
+                if (game.canRoll(roll)) {
+                    
+                    game.addRoll(roll);
+                    
+                    int pinsMissed = pinsLeft - roll.pins();
+                    
+                    System.out.print("You knocked down " + roll.pins() + " pins!");
+                    if (roll.pins() == BowlingGame.ALL_PINS) {
+                        System.out.print(" Perfect shot!");
+                    } else if (pinsMissed == 0) {
+                        System.out.print(" You got all of them!");
+                    } else if (pinsMissed == 1) {
+                        System.out.print(" Good job!");
+                    } else if (pinsMissed == 2) {
+                        System.out.print(" Not bad!");
+                    }
+                    System.out.println();
+                    
+                    // check for game over
+                    if (game.isFinished()) {
+                        System.out.println();
+                        
+                        System.out.print("You finished!");
+                        
+                        if (game.totalScore() == 300) {
+                            System.out.print(" Wow! A perfect game!");
+                        } else if (game.totalScore() > 250) {
+                            System.out.print(" Very impressive!");
+                        } else if (game.totalScore() > 200) {
+                            System.out.print(" Way to go!");
+                        } else if (game.totalScore() > 150) {
+                            System.out.print(" Not bad!");
+                        }
+                        System.out.println();
+                        System.out.println();
+                        System.out.println(game);
+                        
+                        done = true;
+                    }
+                } else {
+                    System.out.print("Invalid roll. Please try again.");
+                    showScore = false;
+                    showPossibleRolls = false;
+                    showPinsLeft = false;
+                }
             }
         }
     }

@@ -72,7 +72,7 @@ public class BowlingGameTest {
         boolean thrown = false;
         
         try {
-	        bowling.addRoll(new Roll(6));
+            bowling.addRoll(new Roll(6));
         } catch (Exception e) {
             thrown = true;
         }
