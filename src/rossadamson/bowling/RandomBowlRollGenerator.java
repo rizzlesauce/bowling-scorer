@@ -9,9 +9,19 @@ import java.util.Random;
  * @author Ross Adamson
  */
 public class RandomBowlRollGenerator implements Iterator<Roll> {
+    /**
+     * Random generator.
+     */
     private Random random;
+    /**
+     * The bowling game to add rolls to.
+     */
     private BowlingGame bowlingGame;
     
+    /**
+     * Constructor.
+     * @param bowlingGame The game to add rolls to.
+     */
     public RandomBowlRollGenerator(BowlingGame bowlingGame) {
         random = new Random();
         this.bowlingGame = bowlingGame;

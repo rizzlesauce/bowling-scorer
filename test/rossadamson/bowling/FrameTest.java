@@ -76,7 +76,7 @@ public class FrameTest {
             }
             
             assertEquals("first roll matches", rolls[0], frame.firstRoll);
-            assertEquals("last roll matches", rolls[rolls.length - 1], frame.endRoll);
+            assertEquals("last roll matches", rolls[rolls.length - 1], frame.lastRoll);
         }
     }
     
@@ -237,7 +237,7 @@ public class FrameTest {
         strikeFrame.isLast = true;
         assertEquals("strike last frame has 10 pins left", 10, strikeFrame.pinsUp());
         assertEquals("one roll", BowlingGame.ALL_PINS - frameWithOneRoll.firstRoll.pins(), frameWithOneRoll.pinsUp());
-        assertEquals("two rolls", BowlingGame.ALL_PINS - twoRollFrame.firstRoll.pins() - twoRollFrame.endRoll.pins(),
+        assertEquals("two rolls", BowlingGame.ALL_PINS - twoRollFrame.firstRoll.pins() - twoRollFrame.lastRoll.pins(),
                 twoRollFrame.pinsUp());
     }
 

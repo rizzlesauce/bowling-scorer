@@ -10,16 +10,33 @@ import java.util.Iterator;
  * @author Ross Adamson
  */
 public class BowlingGame {
+    /**
+     * The 10 frames of the game.
+     */
     public Frame[] frames;
+    /**
+     * The index to the frame where the last roll was
+     * made, or 0 if no rolls have been made.
+     */
     public int currentFrameIndex;
+    /**
+     * Number of frames in a bowling game.
+     */
     public static final int NUMBER_OF_FRAMES = 10;
+    /**
+     * Number of pins at the start of each frame.
+     */
     public static final int ALL_PINS = 10;
     /**
      * Maximum number of rolls possible in any game.
      */
     public static final int MAX_ROLLS = 21;
     /**
-     * Roll types used by rollToString().
+     * Minimum number of rolls possible for a complete game.
+     */
+    public static final int MIN_ROLLS = 11;
+    /**
+     * Roll types used by {@link #rollToString()}.
      */
     private enum RollType {Normal, Strike, Spare};
      
@@ -27,16 +44,19 @@ public class BowlingGame {
      * Constructor.
      */
     public BowlingGame() {
+        frames = new Frame[NUMBER_OF_FRAMES];
+        for (int frameIndex = 0; frameIndex < NUMBER_OF_FRAMES; ++frameIndex) {
+            frames[frameIndex] = new Frame();
+        }
         init();
     }
     
     /**
-     * Initialize this object.
+     * Initialize the object.
      */
     public void init() {
-        frames = new Frame[NUMBER_OF_FRAMES];
         for (int frameIndex = 0; frameIndex < NUMBER_OF_FRAMES; ++frameIndex) {
-            frames[frameIndex] = new Frame();
+            frames[frameIndex].init();
         }
         frames[NUMBER_OF_FRAMES - 1].isLast = true;
         currentFrameIndex = 0;
@@ -45,7 +65,6 @@ public class BowlingGame {
     /**
      * Get the total score of the game so far.
      * Include scores from frames that are incomplete.
-     * @return
      */
     public int totalScore() {
         int score = 0;
@@ -59,7 +78,6 @@ public class BowlingGame {
     
     /**
      * Whether the game is finished.
-     * @return
      */
     public boolean isFinished() {
         return frames[NUMBER_OF_FRAMES - 1].hasAllRolls();
@@ -68,7 +86,6 @@ public class BowlingGame {
     /**
      * Get the frame the next roll should go in.
      * If no rolls more rolls can be made, return null.
-     * @return
      */
     public Frame nextRollFrame() {
         Frame frame = null;
@@ -99,7 +116,7 @@ public class BowlingGame {
             // check for frame change
             if (frames[currentFrameIndex].hasAllRolls()) {
                 // link the roll from the last frame to the new roll
-                frames[currentFrameIndex].endRoll.nextRoll = roll;
+                frames[currentFrameIndex].lastRoll.nextRoll = roll;
                 ++currentFrameIndex;
             }
             
@@ -128,8 +145,7 @@ public class BowlingGame {
     /**
      * Determine whether a roll would be a valid next
      * roll in the game.
-     * @param roll
-     * @return
+     * @param roll A hypothetical roll.
      */
     public boolean canRoll(Roll roll) {
         Frame frame = nextRollFrame();
@@ -144,19 +160,17 @@ public class BowlingGame {
    
     /**
      * Get an iterator over all the rolls in the game.
-     * @return
      */
     public Iterator<Roll> rollIterator() {
-        return new RollIterator(frames[0].firstRoll, frames[currentFrameIndex].endRoll);
+        return new RollIterator(frames[0].firstRoll, frames[currentFrameIndex].lastRoll);
     }
     
     /**
-     * Convert roll to a string representation used in toString().
+     * Convert roll to a string representation used in {@link #toString()}.
      * @param roll
      * @param type The type of roll.
-     * @return
      */
-    private static String rollToString(Roll roll, RollType type) {
+    protected static String rollToString(Roll roll, RollType type) {
         String result = null;
         
         switch (type) {
@@ -185,6 +199,7 @@ public class BowlingGame {
     /**
      * Get a string representation of the score.
      */
+    @Override
     public String toString() {
         String result = "|";
         String frameDivider = " | ";

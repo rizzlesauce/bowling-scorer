@@ -8,7 +8,13 @@ import java.util.NoSuchElementException;
  * @author Ross Adamson
  */
 public class RollIterator implements Iterator<Roll> {
+    /**
+     * The current roll in the list.
+     */
     private Roll currentRoll;
+    /**
+     * The last roll in the list.
+     */
     private Roll endRoll;
         
     /**
@@ -46,4 +52,3 @@ public class RollIterator implements Iterator<Roll> {
         throw new UnsupportedOperationException();
     }
 }
-    

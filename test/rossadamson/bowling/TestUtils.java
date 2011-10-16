@@ -7,12 +7,18 @@ import java.util.Random;
  * @author Ross Adamson
  */
 public class TestUtils {
+    /**
+     * A random generator.
+     */
     public static Random random = new Random();
+    /**
+     * The greatest error allowed when picking a random roll. It allows
+     * {@link #randomGame(int, int)} to pick the worst rolls possible.
+     */
     public static final int MAX_ERROR_ALLOWANCE = BowlingGame.ALL_PINS;
    
     /**
      * Get a random roll.
-     * @return
      */
     public static Roll randomRoll() {
         return new Roll(random.nextInt(BowlingGame.ALL_PINS + 1));
@@ -20,7 +26,6 @@ public class TestUtils {
     
     /**
      * Get an array of random rolls.
-     * @return
      */
     public static Roll[] randomRolls(int size) {
         Roll[] rolls = new Roll[size];

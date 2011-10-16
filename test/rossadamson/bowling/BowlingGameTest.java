@@ -45,12 +45,16 @@ public class BowlingGameTest {
 
     @Test
     public void testIsFinished() throws GameFinishedException, InvalidRollException {
+        assertFalse("empty game is not finished", bowling.isFinished());
+        
         // perfect game
         for (int frameIndex = 0; frameIndex < BowlingGame.NUMBER_OF_FRAMES + 2; ++frameIndex) {
             bowling.addRoll(new Roll(10));
         }
-        
         assertTrue("perfect game should be finished", bowling.isFinished());
+        
+        bowling = TestUtils.randomGame(9, 2);
+        assertFalse("random, incomplete game", bowling.isFinished());
     }
     
     @Test
