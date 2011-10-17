@@ -1,3 +1,11 @@
 author: Ross Adamson
 
 A Java solution for scoring a game of bowling.
+
+Files and Directories:
+    src/        Contains the bowling classes, including an interactive
+                bowling scorer demo.
+    test/       Contains unit test classes for the bowling classes.
+    .classpath  Project classpath declaration    
+    .project    The eclipse project file
+    .settings/  Eclipse settings
